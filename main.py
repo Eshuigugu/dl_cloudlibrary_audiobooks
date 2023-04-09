@@ -192,7 +192,7 @@ if __name__ == '__main__':
             borrow_book(book_id=media_id)
             books_to_download = filter_loaned_books([media_id])
     else:
-        books_to_download = list_loaned_books()
+        books_to_download = [x for x in list_loaned_books() if x['MediaType'] == 'audio']
 
     for book_to_download in books_to_download:
         download_book(book_to_download)
