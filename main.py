@@ -61,7 +61,7 @@ def get_book_metadata_brief(library: str, media_id: str):
                                        headers=HEADERS).json()
 
 
-def download_book(loaned_book):
+def download_book(loaned_book, dump_json=False):
     audiobook_meta_brief = get_book_metadata_brief(library, loaned_book["Id"])
     title = audiobook_meta_brief['Title']
 
@@ -145,6 +145,15 @@ def download_book(loaned_book):
 
     print('Fast Fillout JSON:\n' + json.dumps(fast_fillout))
 
+    # dump metadata to file in JSON format
+    if dump_json:
+        merged_metadata = audiobook_meta_brief
+        for k,v in audiobook_metadata.items():
+            merged_metadata[k]=v
+        merged_metadata['chapters'] = audiobook_loan['items']
+        with open(f'{loaned_book["Id"]}.json', 'w') as f:
+            json.dump(merged_metadata, f, indent='\t')
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -153,6 +162,8 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--password', nargs='?', type=str, help='The password to use to log in')
     parser.add_argument('--prompt_password', nargs='?', default=False, type=bool, help='Whether or not to prompt the user to input a password')
     parser.add_argument('-t', '--title', nargs='?', type=str, help='ID of the title to download')
+    parser.add_argument('--dump_json', action='store_true', help='Dump data in JSON format to file')
+
     args = parser.parse_args()
 
     library = args.library
@@ -166,6 +177,7 @@ if __name__ == '__main__':
     else:
         password = args.password
     media_id = args.title
+    dump_json = args.dump_json
 
 
     if media_id:
@@ -195,5 +207,5 @@ if __name__ == '__main__':
         books_to_download = [x for x in list_loaned_books() if x['MediaType'] == 'audio']
 
     for book_to_download in books_to_download:
-        download_book(book_to_download)
+        download_book(book_to_download, dump_json=dump_json)
 
